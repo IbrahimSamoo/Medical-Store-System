@@ -1,260 +1,168 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Medical Store Management</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>I Cloth Shop - Clothing Gallery</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; }
     body {
-      font-family: Arial, sans-serif;
       margin: 0;
-      background: #eef2f3;
+      font-family: 'Poppins', sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
     }
-    .container {
-      max-width: 600px;
-      margin: auto;
-      padding: 20px;
-    }
-    h1, h2 { text-align: center; }
-    form, section {
-      background: white;
-      padding: 15px;
-      margin: 15px 0;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    input, button {
-      padding: 10px;
-      margin: 8px 0;
-      width: 100%;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-    button {
-      background-color: #007bff;
-      color: white;
-      border: none;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-    button:hover { background-color: #0056b3; }
-    nav {
-      display: flex;
-      justify-content: center;
-      background: #333;
-    }
-    nav button {
-      flex: 1;
-      border: none;
-      padding: 15px;
-      background: #444;
-      color: #fff;
-      font-size: 16px;
-    }
-    nav button.active {
-      background: #007bff;
-    }
-    .hidden { display: none; }
-    .card-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background: linear-gradient(to right, #6a11cb, #2575fc);
-    }
-    .card {
-      width: 300px;
-      background: #fff;
-      border-radius: 10px;
-      padding: 20px;
+
+    .logo {
       text-align: center;
-      animation: slideIn 0.5s ease-in-out;
+      font-size: 2.5rem;
+      font-weight: 600;
+      margin-top: 30px;
+      margin-bottom: 10px;
+      color: #facc15;
+      transition: transform 0.3s ease, text-shadow 0.3s ease;
+      cursor: pointer;
     }
-    @keyframes slideIn {
-      from { transform: translateY(-100px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
+
+    .logo:hover {
+      transform: scale(1.08);
+      text-shadow: 0 0 10px #facc15, 0 0 20px #facc15;
     }
-    img { border-radius: 10px; margin-top: 10px; max-width: 100px; }
+
+    .container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 30px;
+      padding: 40px;
+      max-width: 1400px;
+      margin: auto;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+      opacity: 0;
+      transform: translateY(40px);
+      animation: fadeUp 0.8s forwards;
+    }
+
+    .card:hover {
+      transform: translateY(-12px) scale(1.05);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+    }
+
+    .card img {
+      width: 100%;
+      height: 280px;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+
+    .card:hover img {
+      transform: scale(1.08);
+    }
+
+    .card-body {
+      padding: 18px;
+      text-align: center;
+    }
+
+    .card-body h3 {
+      font-size: 1.1rem;
+      margin: 10px 0;
+      color: #f9fafb;
+    }
+
+    .card-body p {
+      color: #34d399;
+      font-size: 1rem;
+    }
+
+    @keyframes fadeUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    footer {
+      text-align: center;
+      padding: 25px 20px;
+      background-color: #111827;
+      color: #9ca3af;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 900px) {
+      .container {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+
+      .logo {
+        font-size: 1.8rem;
+      }
+    }
   </style>
 </head>
 <body>
 
-  <nav>
-    <button onclick="showPage('loginCard')" class="active">Login</button>
-    <button onclick="showPage('userPage')">User</button>
-    <button onclick="showPage('adminPage')">Admin</button>
-  </nav>
+  <div class="logo">I Cloth Gallery</div>
 
-  <div id="loginCard" class="card-container">
-    <div class="card">
-      <h2>Login / Sign Up</h2>
-      <form id="userForm">
-        <input type="text" id="userName" placeholder="Enter Name" required>
-        <input type="email" id="userEmail" placeholder="Enter Email" required>
-        <input type="file" id="userPic" accept="image/*">
-        <button type="submit">Create User</button>
-      </form>
-    </div>
-  </div>
+  <div class="container" id="productContainer"></div>
 
-  <div id="userPage" class="container hidden">
-    <h1>Medical Store - User Panel</h1>
-    <div id="userProfile"></div>
-    <section>
-      <h2>Purchase Medicine</h2>
-      <form id="purchaseForm">
-        <input type="text" id="purchaseMed" placeholder="Medicine Name" required>
-        <input type="number" id="purchaseQty" placeholder="Quantity" required>
-        <input type="number" id="purchasePrice" placeholder="Price per Unit" required>
-        <button type="submit">Add to Stock</button>
-      </form>
-    </section>
-    <section>
-      <h2>Sell Medicine</h2>
-      <form id="salesForm">
-        <input type="text" id="saleMed" placeholder="Medicine Name" required>
-        <input type="number" id="saleQty" placeholder="Quantity" required>
-        <button type="submit">Sell Medicine</button>
-      </form>
-      <button onclick="generateSalesPDF()">Download Sales Report (PDF)</button>
-    </section>
-  </div>
-
-  <div id="adminPage" class="container hidden">
-    <h1>Admin Panel - Sales Summary</h1>
-    <div id="adminPanel"></div>
-  </div>
+  <footer>
+    &copy; 2025 I Cloth Gallery. All rights reserved.
+  </footer>
 
   <script>
-    let medicines = JSON.parse(localStorage.getItem("medicines")) || [];
-    let totalSales = parseFloat(localStorage.getItem("totalSales")) || 0;
-    let salesList = JSON.parse(localStorage.getItem("salesList")) || [];
+    const products = [
+      { name: "Stylish Kurta", price: "Rs 5000", img: "store/images (5).jpeg" },
+      { name: "Casual Shirt", price: "Rs 3500", img: "store/images (4).jpeg" },
+      { name: "Wedding Suit", price: "Rs 6700", img: "store/images (3).jpeg" },
+      { name: "Designer Dress", price: "Rs 8000", img: "store/images (2).jpeg" },
+      { name: "Luxury Wear", price: "Rs 11500", img: "store/cloth1.jpeg" },
+      { name: "Formal Outfit", price: "Rs 5500", img: "store/images (6).jpeg" },
+      { name: "Winter Coat", price: "Rs 10000", img: "store/images (7).jpeg" },
+      { name: "Modern Outfit", price: "Rs 6500", img: "store/images (8).jpeg" },
+      { name: "Stylish Top", price: "Rs 4500", img: "store/images (9).jpeg" },
+      { name: "Summer Dress", price: "Rs 4000", img: "store/images (10).jpeg" },
+      { name: "Simple Kurti", price: "Rs 2500", img: "store/images (11).jpeg" },
+      { name: "Classic Wear", price: "Rs 5000", img: "store/images (12).jpeg" },
+      { name: "Elegant Frock", price: "Rs 7500", img: "store/ladies-dress-wear-6097570_1280 (1).jpg" },
+      { name: "Casual Dress", price: "Rs 3500", img: "store/ladies-dress-wear-6097570_1280.jpg" }
+    ];
 
-    function showPage(id) {
-      document.querySelectorAll("nav button").forEach(btn => btn.classList.remove("active"));
-      document.querySelector(`nav button[onclick="showPage('${id}')"]`).classList.add("active");
-      document.getElementById("loginCard").classList.add("hidden");
-      document.getElementById("userPage").classList.add("hidden");
-      document.getElementById("adminPage").classList.add("hidden");
-      document.getElementById(id).classList.remove("hidden");
+    function shuffle(array) {
+      return array.sort(() => Math.random() - 0.5);
     }
 
-    document.getElementById("purchaseForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const name = document.getElementById("purchaseMed").value;
-      const qty = parseInt(document.getElementById("purchaseQty").value);
-      const price = parseFloat(document.getElementById("purchasePrice").value);
+    const container = document.getElementById("productContainer");
+    const selected = shuffle(products).slice(0, 8); // Pick only 8 random
 
-      let found = false;
-      medicines = medicines.map(m => {
-        if (m.name.toLowerCase() === name.toLowerCase()) {
-          m.quantity += qty;
-          m.price = price;
-          found = true;
-        }
-        return m;
-      });
-      if (!found) medicines.push({ name, quantity: qty, price });
-
-      localStorage.setItem("medicines", JSON.stringify(medicines));
-      alert("Medicine added to stock.");
-      this.reset();
-      updateAdmin();
+    selected.forEach((product, index) => {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.style.animationDelay = `${index * 0.15}s`;
+      card.innerHTML = `
+        <img src="${product.img}" alt="${product.name}">
+        <div class="card-body">
+          <h3>${product.name}</h3>
+          <p>${product.price}</p>
+        </div>
+      `;
+      container.appendChild(card);
     });
-
-    document.getElementById("salesForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const name = document.getElementById("saleMed").value;
-      const qty = parseInt(document.getElementById("saleQty").value);
-
-      let found = false;
-      let price = 0;
-      medicines = medicines.map(m => {
-        if (m.name.toLowerCase() === name.toLowerCase() && m.quantity >= qty) {
-          m.quantity -= qty;
-          price = m.price;
-          found = true;
-          totalSales += qty * price;
-          salesList.push({ name, quantity: qty, price, total: qty * price, date: new Date().toLocaleDateString() });
-        }
-        return m;
-      });
-
-      if (found) {
-        localStorage.setItem("medicines", JSON.stringify(medicines));
-        localStorage.setItem("totalSales", totalSales);
-        localStorage.setItem("salesList", JSON.stringify(salesList));
-        alert("Sale recorded.");
-        this.reset();
-        updateAdmin();
-      } else {
-        alert("Medicine not found or insufficient stock.");
-      }
-    });
-
-    function generateSalesPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      doc.setFont("times", "normal");
-      doc.setFontSize(18);
-      doc.text("Sales Report - Medical Store", 20, 20);
-      doc.setFontSize(12);
-      let y = 30;
-
-      salesList.forEach((sale, index) => {
-        doc.text(`Sale #${index + 1}`, 20, y); y += 10;
-        doc.text(`Date: ${sale.date}`, 20, y);
-        doc.text(`Medicine: ${sale.name}`, 100, y); y += 10;
-        doc.text(`Qty: ${sale.quantity}`, 20, y);
-        doc.text(`Price: Rs. ${sale.price}`, 100, y); y += 10;
-        doc.text(`Total: Rs. ${sale.total}`, 20, y); y += 15;
-      });
-
-      doc.save("All_Sales_Report.pdf");
-    }
-
-    document.getElementById("userForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const name = document.getElementById("userName").value;
-      const email = document.getElementById("userEmail").value;
-      const pic = document.getElementById("userPic").files[0];
-      const userId = "UID" + Math.floor(Math.random() * 100000);
-
-      const reader = new FileReader();
-      reader.onload = function(event) {
-        const imageUrl = event.target.result;
-        localStorage.setItem("userData", JSON.stringify({ name, email, userId, imageUrl }));
-        showUserProfile();
-        showPage('userPage');
-      };
-      if (pic) reader.readAsDataURL(pic);
-    });
-
-    function showUserProfile() {
-      const user = JSON.parse(localStorage.getItem("userData"));
-      if (user) {
-        document.getElementById("userProfile").innerHTML =
-          `<p><strong>ID:</strong> ${user.userId}</p>
-           <p><strong>Name:</strong> ${user.name}</p>
-           <p><strong>Email:</strong> ${user.email}</p>
-           <img src="${user.imageUrl}" alt="User Image" />`;
-      }
-    }
-
-    function updateAdmin() {
-      let content = `<p><strong>Total Revenue:</strong> Rs. ${totalSales}</p>`;
-      content += `<p><strong>Sales Count:</strong> ${salesList.length}</p>`;
-      content += `<h3>Stock Overview:</h3>`;
-      medicines.forEach(m => {
-        content += `<p>${m.name}: ${m.quantity} units @ Rs. ${m.price}</p>`;
-      });
-      document.getElementById("adminPanel").innerHTML = content;
-    }
-
-    showUserProfile();
-    updateAdmin();
   </script>
+
 </body>
 </html>
