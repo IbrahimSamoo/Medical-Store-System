@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Medical Store Management</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #eef2f3;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+    }
+    h1, h2 { text-align: center; }
+    form, section {
+      background: white;
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    input, button {
+      padding: 10px;
+      margin: 8px 0;
+      width: 100%;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover { background-color: #0056b3; }
+    nav {
+      display: flex;
+      justify-content: center;
+      background: #333;
+    }
+    nav button {
+      flex: 1;
+      border: none;
+      padding: 15px;
+      background: #444;
+      color: #fff;
+      font-size: 16px;
+    }
+    nav button.active {
+      background: #007bff;
+    }
+    .hidden { display: none; }
+    .card-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: linear-gradient(to right, #6a11cb, #2575fc);
+    }
+    .card {
+      width: 300px;
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      animation: slideIn 0.5s ease-in-out;
+    }
+    @keyframes slideIn {
+      from { transform: translateY(-100px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    img { border-radius: 10px; margin-top: 10px; max-width: 100px; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <button onclick="showPage('loginCard')" class="active">Login</button>
+    <button onclick="showPage('userPage')">User</button>
+    <button onclick="showPage('adminPage')">Admin</button>
+  </nav>
+
+  <div id="loginCard" class="card-container">
+    <div class="card">
+      <h2>Login / Sign Up</h2>
+      <form id="userForm">
+        <input type="text" id="userName" placeholder="Enter Name" required>
+        <input type="email" id="userEmail" placeholder="Enter Email" required>
+        <input type="file" id="userPic" accept="image/*">
+        <button type="submit">Create User</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="userPage" class="container hidden">
+    <h1>Medical Store - User Panel</h1>
+    <div id="userProfile"></div>
+    <section>
+      <h2>Purchase Medicine</h2>
+      <form id="purchaseForm">
+        <input type="text" id="purchaseMed" placeholder="Medicine Name" required>
+        <input type="number" id="purchaseQty" placeholder="Quantity" required>
+        <input type="number" id="purchasePrice" placeholder="Price per Unit" required>
+        <button type="submit">Add to Stock</button>
+      </form>
+    </section>
+    <section>
+      <h2>Sell Medicine</h2>
+      <form id="salesForm">
+        <input type="text" id="saleMed" placeholder="Medicine Name" required>
+        <input type="number" id="saleQty" placeholder="Quantity" required>
+        <button type="submit">Sell Medicine</button>
+      </form>
+      <button onclick="generateSalesPDF()">Download Sales Report (PDF)</button>
+    </section>
+  </div>
+
+  <div id="adminPage" class="container hidden">
+    <h1>Admin Panel - Sales Summary</h1>
+    <div id="adminPanel"></div>
+  </div>
+
+  <script>
+    let medicines = JSON.parse(localStorage.getItem("medicines")) || [];
+    let totalSales = parseFloat(localStorage.getItem("totalSales")) || 0;
+    let salesList = JSON.parse(localStorage.getItem("salesList")) || [];
+
+    function showPage(id) {
+      document.querySelectorAll("nav button").forEach(btn => btn.classList.remove("active"));
+      document.querySelector(`nav button[onclick="showPage('${id}')"]`).classList.add("active");
+      document.getElementById("loginCard").classList.add("hidden");
+      document.getElementById("userPage").classList.add("hidden");
+      document.getElementById("adminPage").classList.add("hidden");
+      document.getElementById(id).classList.remove("hidden");
+    }
+
+    document.getElementById("purchaseForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const name = document.getElementById("purchaseMed").value;
+      const qty = parseInt(document.getElementById("purchaseQty").value);
+      const price = parseFloat(document.getElementById("purchasePrice").value);
+
+      let found = false;
+      medicines = medicines.map(m => {
+        if (m.name.toLowerCase() === name.toLowerCase()) {
+          m.quantity += qty;
+          m.price = price;
+          found = true;
+        }
+        return m;
+      });
+      if (!found) medicines.push({ name, quantity: qty, price });
+
+      localStorage.setItem("medicines", JSON.stringify(medicines));
+      alert("Medicine added to stock.");
+      this.reset();
+      updateAdmin();
+    });
+
+    document.getElementById("salesForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const name = document.getElementById("saleMed").value;
+      const qty = parseInt(document.getElementById("saleQty").value);
+
+      let found = false;
+      let price = 0;
+      medicines = medicines.map(m => {
+        if (m.name.toLowerCase() === name.toLowerCase() && m.quantity >= qty) {
+          m.quantity -= qty;
+          price = m.price;
+          found = true;
+          totalSales += qty * price;
+          salesList.push({ name, quantity: qty, price, total: qty * price, date: new Date().toLocaleDateString() });
+        }
+        return m;
+      });
+
+      if (found) {
+        localStorage.setItem("medicines", JSON.stringify(medicines));
+        localStorage.setItem("totalSales", totalSales);
+        localStorage.setItem("salesList", JSON.stringify(salesList));
+        alert("Sale recorded.");
+        this.reset();
+        updateAdmin();
+      } else {
+        alert("Medicine not found or insufficient stock.");
+      }
+    });
+
+    function generateSalesPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.setFont("times", "normal");
+      doc.setFontSize(18);
+      doc.text("Sales Report - Medical Store", 20, 20);
+      doc.setFontSize(12);
+      let y = 30;
+
+      salesList.forEach((sale, index) => {
+        doc.text(`Sale #${index + 1}`, 20, y); y += 10;
+        doc.text(`Date: ${sale.date}`, 20, y);
+        doc.text(`Medicine: ${sale.name}`, 100, y); y += 10;
+        doc.text(`Qty: ${sale.quantity}`, 20, y);
+        doc.text(`Price: Rs. ${sale.price}`, 100, y); y += 10;
+        doc.text(`Total: Rs. ${sale.total}`, 20, y); y += 15;
+      });
+
+      doc.save("All_Sales_Report.pdf");
+    }
+
+    document.getElementById("userForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const name = document.getElementById("userName").value;
+      const email = document.getElementById("userEmail").value;
+      const pic = document.getElementById("userPic").files[0];
+      const userId = "UID" + Math.floor(Math.random() * 100000);
+
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const imageUrl = event.target.result;
+        localStorage.setItem("userData", JSON.stringify({ name, email, userId, imageUrl }));
+        showUserProfile();
+        showPage('userPage');
+      };
+      if (pic) reader.readAsDataURL(pic);
+    });
+
+    function showUserProfile() {
+      const user = JSON.parse(localStorage.getItem("userData"));
+      if (user) {
+        document.getElementById("userProfile").innerHTML =
+          `<p><strong>ID:</strong> ${user.userId}</p>
+           <p><strong>Name:</strong> ${user.name}</p>
+           <p><strong>Email:</strong> ${user.email}</p>
+           <img src="${user.imageUrl}" alt="User Image" />`;
+      }
+    }
+
+    function updateAdmin() {
+      let content = `<p><strong>Total Revenue:</strong> Rs. ${totalSales}</p>`;
+      content += `<p><strong>Sales Count:</strong> ${salesList.length}</p>`;
+      content += `<h3>Stock Overview:</h3>`;
+      medicines.forEach(m => {
+        content += `<p>${m.name}: ${m.quantity} units @ Rs. ${m.price}</p>`;
+      });
+      document.getElementById("adminPanel").innerHTML = content;
+    }
+
+    showUserProfile();
+    updateAdmin();
+  </script>
+</body>
+</html>
